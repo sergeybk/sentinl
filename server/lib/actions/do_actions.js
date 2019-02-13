@@ -37,6 +37,9 @@ import { ActionError } from '../errors';
 // actions
 import reportAction from './report';
 
+// proxy support
+var tunnel = require('tunnel');
+
 const toString = function (message) {
   if (typeof message !== 'string') {
     return JSON.stringify(message);
@@ -80,7 +83,20 @@ export default function (server, actions, payload, task) {
   let slack;
   try {
     if (config.settings.slack.active) {
-      slack = new WebClient(config.settings.slack.token);
+      // proxy support
+      if (process.env.SENTINL_PROXY_HOST && process.env.SENTINL_PROXY_PORT) {
+        log.info('configure Slack proxy ' + process.env.SENTINL_PROXY_HOST + ':' + process.env.SENTINL_PROXY_PORT);
+        var tunnelingAgent = tunnel.httpsOverHttp({
+          proxy: {
+            host: process.env.SENTINL_PROXY_HOST,
+            port: process.env.SENTINL_PROXY_PORT
+          }
+        });
+        slack = new WebClient(config.settings.slack.token, { agent: tunnelingAgent });
+      }
+      else {
+        slack = new WebClient(config.settings.slack.token);
+      }
     }
   } catch (err) {
     err = new ActionError('slack client', err);
