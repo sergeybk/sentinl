@@ -59,12 +59,6 @@ export default function (server, actions, payload, task) {
   const config = getConfiguration(server);
   let log = new Log(config.app_name, server, 'do_action');
 
-  // support multi-node Kibana cluster
-  if (process.env.SENTINL_MASTER == null) {
-    log.warning('not a master node, skip action execution');
-    return;
-  }
-
   // Use Elasticsearch API because Kibana savedObjectsClient
   // can't be used without session user from request
   const client = apiClient(server, 'elasticsearchAPI');

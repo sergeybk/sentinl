@@ -67,6 +67,11 @@ export default function Scheduler(server) {
       return;
     }
 
+    if (process.env.SENTINL_MASTER == null) {
+      log.warning('not a master node, skip action execution');
+      return;
+    }
+
     log.info(prefix, 'executing');
 
     if (!task.actions || isEmpty(task.actions)) {
